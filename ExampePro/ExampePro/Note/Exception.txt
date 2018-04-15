@@ -1,0 +1,7 @@
+oracle服务端为64位客户端安装为32bit，程序设置编译平台（目标平台）为64位，
+1.尝试加载 Oracle 客户端库时引发 BadImageFormatException。如果在安装 32 位 Oracle 客户端组件的情况下以 64 位模式运行，将出现此问题。
+配置系统环境变量：
+ORACLE_HOME oracle安装路径
+TNS_ADMIN net manager中配置服务命名的文件路径
+NLS_LANG=
+2.System.Data.OracleClient 需要 Oracle 客户端软件 version 8.1.7 或更高版本。
