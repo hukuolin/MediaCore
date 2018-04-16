@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="OracleClientWcf.LinkOracle" CodeBehind="LinkOracle.svc.cs" %>

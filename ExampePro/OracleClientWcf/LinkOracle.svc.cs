@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
+using System.ServiceModel;
+using System.ServiceModel.Web;
 using System.Text;
-using System.Threading.Tasks;
 using System.Data;
-namespace ExampePro
+namespace OracleClientWcf
 {
-    class Program
+    // 注意: 使用“重构”菜单上的“重命名”命令，可以同时更改代码、svc 和配置文件中的类名“Service1”。
+    // 注意: 为了启动 WCF 测试客户端以测试此服务，请在解决方案资源管理器中选择 Service1.svc 或 Service1.svc.cs，然后开始调试。
+  
+    public class LinkOracle : ILinkOracle
     {
-        static void Main(string[] args)
-        {
-            LinkRemoteDB();
-            Console.ReadLine();
-            Console.WriteLine("Link wcf");
-            LinkWcf();
-            Console.ReadLine();
-        }
-        static void LinkRemoteDB() 
+        public DataSet QueryAllCREW() 
         {
             string cmd = @"select t.User_Name,
                                        t.USER_CODE,
@@ -37,27 +34,7 @@ namespace ExampePro
                                  Where t.dept_code = s.dept_code";
             DBAccess db = new DBAccess();
             DataSet ds = db.ExecuteSqlItem(cmd, null);
-            ConsoleDataSetInfo(ds);
-        }
-        static void ConsoleDataSetInfo(DataSet ds)
-        {
-            if (ds == null)
-            {
-                Console.WriteLine("QuerResult:null");
-                return;
-            }
-            int table = ds.Tables.Count;
-            Console.WriteLine("QueryResult table:" + table);
-            if (table > 0)
-            {
-                Console.WriteLine("Row:" + ds.Tables[0].Rows.Count);
-            }
-        }
-        static void LinkWcf() 
-        {
-            OracleClientExample.LinkOracleClient link = new OracleClientExample.LinkOracleClient();
-            DataSet ds= link.QueryAllCREW();
-            ConsoleDataSetInfo(ds);
+            return ds;
         }
     }
 }
