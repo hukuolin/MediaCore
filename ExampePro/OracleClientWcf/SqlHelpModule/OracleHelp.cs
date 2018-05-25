@@ -204,9 +204,9 @@ namespace OracleClientWcf
             public string ExceuteSql { get; set; }
             public OracleParameter[] SqlParamArrary { get; set; }
         }
-        public class Data
+        public class Data<T> where T:class
         {
-            public Type TargetClass { get; set; }
+            public T TargetClass { get; set; }
             public Dictionary<string, string> TableColumnMapProperty { get; set; }
         }
     }
