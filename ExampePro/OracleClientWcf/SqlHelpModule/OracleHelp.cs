@@ -7,6 +7,7 @@ using System.Web;
 using DataHelp;
 using CommonHelperEntity;
 using Infrastructure.ExtService;
+using System.Data;
 namespace OracleClientWcf
 {
     public class OracleSqlHelp
@@ -74,6 +75,44 @@ namespace OracleClientWcf
             int result = comm.ExecuteNonQuery();
             conn.Close();
             return result > 0;
+        }
+        static DataTable ReadDataFromSqlArrary(string sql, string tableName,OracleParameter[] param,OracleConnection conn) 
+        {
+            OracleCommand comm = new OracleCommand(sql, conn);
+            if (param != null)
+            {
+                comm.Parameters.AddRange(param);
+            }
+            OracleDataAdapter dap = new OracleDataAdapter(comm);
+            DataTable table = new DataTable();
+            dap.Fill(table);
+            table.TableName = tableName;
+            return table;
+        }
+        /// <summary>
+        /// 执行批量的查询SQL
+        /// </summary>
+        /// <param name="sqlParam"></param>
+        /// <param name="sqlConnString">数据库连接串</param>
+        /// <returns></returns>
+        public static DataSet ReadDataSet(List<SqlParamDataSet> sqlParam,string sqlConnString) 
+        {
+            OracleConnection conn = new OracleConnection(sqlConnString);
+            DataSet ds = new DataSet();
+            conn.Open();
+            foreach (var item in sqlParam)
+            {
+                DataTable table= ReadDataFromSqlArrary(item.ExceuteSql, item.ClassName, item.SqlParamArrary, conn);
+                ds.Tables.Add(table);
+            }
+            conn.Close();
+            return ds;
+        }
+        public class SqlParamDataSet
+        {
+            public string ClassName { get; set; }
+            public string ExceuteSql { get; set; }
+            public OracleParameter[] SqlParamArrary { get; set; }
         }
     }
 }
