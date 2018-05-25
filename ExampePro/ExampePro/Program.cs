@@ -15,6 +15,8 @@ namespace ExampePro
             Console.WriteLine("Link wcf");
             LinkWcf();
             Console.ReadLine();
+            LinkCompanyWcf();
+            Console.ReadLine();
         }
         static void LinkRemoteDB() 
         {
@@ -57,6 +59,12 @@ namespace ExampePro
         {
             OracleClientExample.LinkOracleClient link = new OracleClientExample.LinkOracleClient();
             DataSet ds= link.QueryAllCREW();
+            ConsoleDataSetInfo(ds);
+        }
+        static void LinkCompanyWcf() 
+        {
+            XizangCrewWcf.SysManagerContractClient sys = new XizangCrewWcf.SysManagerContractClient();
+            DataSet ds = sys.GetUserDSByCode("fadmin");
             ConsoleDataSetInfo(ds);
         }
     }

@@ -13,13 +13,14 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OracleClientWcf</RootNamespace>
     <AssemblyName>OracleClientWcf</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <WcfConfigValidationEnabled>True</WcfConfigValidationEnabled>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -39,14 +40,30 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonHelperEntity">
+      <HintPath>..\Dll\SelfExt\CommonHelperEntity.dll</HintPath>
+    </Reference>
+    <Reference Include="DataHelp">
+      <HintPath>..\Dll\SelfExt\DataHelp.dll</HintPath>
+    </Reference>
+    <Reference Include="Domain.CommonData">
+      <HintPath>..\Dll\SelfExt\Domain.CommonData.dll</HintPath>
+    </Reference>
+    <Reference Include="Domain.GlobalModel">
+      <HintPath>..\Dll\SelfExt\Domain.GlobalModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure.ExtService">
+      <HintPath>..\Dll\SelfExt\Infrastructure.ExtService.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data.OracleClient" />
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.EnterpriseServices" />
@@ -62,7 +79,10 @@
   <ItemGroup>
     <Content Include="ExampleObj.svc" />
     <Content Include="LinkOracle.svc" />
-    <Content Include="Web.config" />
+    <Compile Include="AirModel\UseSignTime.cs" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DBAccess.cs" />

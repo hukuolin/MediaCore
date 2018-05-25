@@ -15,6 +15,8 @@ namespace OracleClientWcf
         // TODO: 在此添加您的服务操作
          [OperationContract]
         DataSet QueryAllCREW();
+         [OperationContract]
+         void GenerateSign(int daySize, DateTime beginDay); 
     }
 
 

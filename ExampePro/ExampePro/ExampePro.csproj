@@ -33,6 +33,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dll\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -54,6 +58,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="Service References\XizangCrewWcf\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
@@ -70,12 +79,29 @@
     <None Include="Service References\OracleClientExample\LinkOracle2.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Service References\XizangCrewWcf\SystemManagerService.wsdl" />
+    <None Include="Service References\XizangCrewWcf\SystemManagerService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\XizangCrewWcf\SystemManagerService1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\XizangCrewWcf\SystemManagerService2.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Note\Exception.txt" />
+    <None Include="Service References\XizangCrewWcf\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\XizangCrewWcf\configuration.svcinfo" />
+    <None Include="Service References\XizangCrewWcf\configuration91.svcinfo" />
+    <None Include="Service References\XizangCrewWcf\SystemManagerService.disco" />
     <None Include="Service References\OracleClientExample\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -85,6 +111,7 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\OracleClientExample\" />
+    <WCFMetadataStorage Include="Service References\XizangCrewWcf\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

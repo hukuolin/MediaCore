@@ -36,5 +36,10 @@ namespace OracleClientWcf
             DataSet ds = db.ExecuteSqlItem(cmd, null);
             return ds;
         }
+        public void GenerateSign(int daySize,DateTime beginDay) 
+        {
+            UseSignTime map = new UseSignTime();
+            map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
+        }
     }
 }

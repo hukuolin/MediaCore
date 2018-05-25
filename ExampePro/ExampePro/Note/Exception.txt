@@ -5,3 +5,11 @@ ORACLE_HOME oracle安装路径
 TNS_ADMIN net manager中配置服务命名的文件路径
 NLS_LANG=
 2.System.Data.OracleClient 需要 Oracle 客户端软件 version 8.1.7 或更高版本。
+
+
+C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\System.Data.OracleClient.dll[ company using dll]
+C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.OracleClient.dll[using the dll success]
+C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.OracleClient.dll
+
+3.wcf 
+无法激活服务，因为它不支持 ASP.NET 兼容性。已为此应用程序启用了 ASP.NET 兼容性。请在 web.config 中关闭 ASP.NET 兼容性模式，或将 AspNetCompatibilityRequirements 特性添加到服务类型且同时将 RequirementsMode 设置为“Allowed”或“Required”。

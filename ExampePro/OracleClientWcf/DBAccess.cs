@@ -23,8 +23,8 @@ namespace OracleClientWcf
         public static string DBConnectionStringSMS =GetConfiguration("SMSDBConnection");
 
         public static string SMSSqlString =GetConfiguration("SMSSqlString");
-       
 
+        public static string AirDBR5 = GetConfiguration("AirDBR5");
 
         public bool CancelFlag = false;
 
