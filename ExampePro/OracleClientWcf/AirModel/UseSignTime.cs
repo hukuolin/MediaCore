@@ -55,7 +55,7 @@ namespace OracleClientWcf
             UseSignTime use = new UseSignTime();
             OracleSqlHelp oracle = new OracleSqlHelp();
             MapClassVsTable map = new MapClassVsTable();
-            Dictionary<string, string> dict = map.MapColumnVsProperty<UseSignTime>(db);
+            Dictionary<string, string> dict = map.MapPropertyVsDBColumn<UseSignTime>(db);
             string sql = oracle.PrepareInsertSql<UseSignTime>(dict);
             LoggerWriter.CreateLogFile(sql, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData);
             OracleParameter[] ps = oracle.PrepareParamBySql(use, sql);
@@ -65,7 +65,7 @@ namespace OracleClientWcf
     public class MapClassVsTable
     { 
         /// <summary>
-        /// 建立匹配关系
+        /// 列-属性 建立匹配关系
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="columns"></param>
@@ -89,11 +89,41 @@ namespace OracleClientWcf
             }
             return dict;
         }
-       
+        /// <summary>
+        /// 属性-列
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="columns"></param>
+        /// <returns></returns>
+        public Dictionary<string, string> MapPropertyVsDBColumn<T>(string[] columns) where T : class
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            T entity = System.Activator.CreateInstance<T>();
+            string[] pis = entity.GetAllProperties();
+            foreach (var item in columns)
+            {
+                string deal = item.Replace("_", "");
+                foreach (var p in pis)
+                {
+                    if (deal.ToLower() == p.ToLower())
+                    {
+                        dict.Add(p,item);
+                        break;
+                    }
+                }
+            }
+            return dict;
+        }
     }
     public class SqlHelp 
     {
-        public string PrepareInsertSQL<T>(Dictionary<string,string> columnMap) where T:class
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyMapColumnDict">属性匹配列的字典</param>
+        /// <returns></returns>
+        public string PrepareInsertSQL<T>(Dictionary<string,string> propertyMapColumnDict) where T:class
         {
             Type ty = typeof(T);
             string table = ty.Name;
@@ -110,6 +140,7 @@ namespace OracleClientWcf
             }
 
             List<string> columns = new List<string>();
+            List<string> dbColumn = new List<string>();
             foreach (PropertyInfo item in ty.GetProperties())
             {
                 string pn = item.Name;
@@ -126,7 +157,8 @@ namespace OracleClientWcf
                     ColumnAttribute col = propertyMapColumn[0] as ColumnAttribute;
                     pn = string.IsNullOrEmpty(col.Name) ? pn : col.Name;
                 }
-                columns.Add("[" + pn + "]");
+                columns.Add( pn );
+                dbColumn.Add(propertyMapColumnDict[pn]);
             }
             if (columns.Count == 0)
             {//没有匹配的数据库列 
@@ -143,12 +175,12 @@ namespace OracleClientWcf
         /// 准备insert 语句
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="data"></param>
+        /// <param name="propertyMapColumnDict">属性匹配列的字典</param>
         /// <returns></returns>
-        public string PrepareInsertSql<T>(Dictionary<string, string> columnMap) where T : class
+        public string PrepareInsertSql<T>(Dictionary<string, string> propertyMapColumnDict) where T : class
         {
             SqlHelp help = new SqlHelp();
-            return help.PrepareInsertSQL<T>(columnMap);
+            return help.PrepareInsertSQL<T>(propertyMapColumnDict);
         }
         public  OracleParameter[] PrepareParamBySql<T>( T data,string sql)  where T:class
         {//根据SQL准备参数

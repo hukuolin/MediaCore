@@ -6,6 +6,8 @@ using System.ServiceModel;
 using System.ServiceModel.Web;
 using System.Text;
 using System.Data;
+using Infrastructure.ExtService;
+using Domain.CommonData;
 namespace OracleClientWcf
 {
     // 注意: 使用“重构”菜单上的“重命名”命令，可以同时更改代码、svc 和配置文件中的类名“Service1”。
@@ -39,7 +41,18 @@ namespace OracleClientWcf
         public void GenerateSign(int daySize,DateTime beginDay) 
         {
             UseSignTime map = new UseSignTime();
-            map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
+            string format = "yyyyMMdd";
+            string time = DateTime.Now.ToString(format) + ".log";
+            try
+            {
+                LoggerWriter.CreateLogFile(string.Format(" into to wcf [GenerateSign] parama -> daySize=【{0}】，time =【{1}】", daySize, beginDay.ToString(format)),
+                    new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+                map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
+            }
+            catch (Exception ex)
+            {
+                LoggerWriter.CreateLogFile(ex.Message, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+            }
         }
     }
 }

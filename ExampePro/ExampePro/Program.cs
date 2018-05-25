@@ -10,6 +10,8 @@ namespace ExampePro
     {
         static void Main(string[] args)
         {
+            GenerateAirData();
+            return;
             LinkRemoteDB();
             Console.ReadLine();
             Console.WriteLine("Link wcf");
@@ -66,6 +68,11 @@ namespace ExampePro
             XizangCrewWcf.SysManagerContractClient sys = new XizangCrewWcf.SysManagerContractClient();
             DataSet ds = sys.GetUserDSByCode("fadmin");
             ConsoleDataSetInfo(ds);
+        }
+        static void GenerateAirData() 
+        {
+            AirOracleWcf.LinkOracleClient air = new AirOracleWcf.LinkOracleClient();
+            air.GenerateSign(100, DateTime.Now.AddDays(-50));
         }
     }
 }
