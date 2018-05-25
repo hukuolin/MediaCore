@@ -13,10 +13,10 @@ namespace OracleClientWcf
     public interface ILinkOracle
     {
         // TODO: 在此添加您的服务操作
-         [OperationContract]
+        [OperationContract]
         DataSet QueryAllCREW();
-         [OperationContract]
-         void GenerateSign(int daySize, DateTime beginDay); 
+        [OperationContract]
+        DataSet GenerateSign(int daySize, DateTime beginDay);
     }
 
 

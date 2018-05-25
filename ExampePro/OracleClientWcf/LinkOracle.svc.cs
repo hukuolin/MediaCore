@@ -38,20 +38,41 @@ namespace OracleClientWcf
             DataSet ds = db.ExecuteSqlItem(cmd, null);
             return ds;
         }
-        public void GenerateSign(int daySize,DateTime beginDay) 
+        void InsertLog(string text) 
         {
-            UseSignTime map = new UseSignTime();
+            string format = "yyyyMMdd";
+            string time = DateTime.Now.ToString(format) + ".log";
+            LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+        
+        }
+        public DataSet GenerateSign(int daySize,DateTime beginDay) 
+        {
+           
             string format = "yyyyMMdd";
             string time = DateTime.Now.ToString(format) + ".log";
             try
             {
                 LoggerWriter.CreateLogFile(string.Format(" into to wcf [GenerateSign] parama -> daySize=【{0}】，time =【{1}】", daySize, beginDay.ToString(format)),
                     new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
-                map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
+                UseSignTime map = new UseSignTime();
+                // map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
+                FltScheulde flt = new FltScheulde();
+                OracleSqlHelp oracle = new OracleSqlHelp();
+                string sql = DBAccess.AirDBR5;
+                Dictionary<Type,string> entityAndSelectSql=new Dictionary<Type,string>();
+                DateTime now=DateTime.Now;
+                entityAndSelectSql.Add(typeof(FltScheulde), flt.GetBetweenDaySql(now.AddDays(-10), now));
+                DataSet ds= oracle.QueryData(entityAndSelectSql, DBAccess.AirDBR5);
+                InsertLog(string.Format("query table=【{0}】",ds.Tables.Count));
+                List<Type> models=new List<Type>();
+                models.Add(typeof(FltScheulde));
+                Dictionary<string,List<Type> > data= oracle.DataSetConvertEntity(ds, models);
+                return ds;
             }
             catch (Exception ex)
             {
-                LoggerWriter.CreateLogFile(ex.Message, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+                InsertLog(ex.Message);
+                return null;
             }
         }
     }

@@ -8,6 +8,8 @@ using DataHelp;
 using CommonHelperEntity;
 using Infrastructure.ExtService;
 using System.Data;
+using Domain.GlobalModel;
+using System.Reflection;
 namespace OracleClientWcf
 {
     public class OracleSqlHelp
@@ -108,11 +110,104 @@ namespace OracleClientWcf
             conn.Close();
             return ds;
         }
+        public DataSet QueryData(Dictionary<Type, string> entityWithSelectSql,string sqlConnString)
+        {
+            List<SqlParamDataSet> paramList = new List<SqlParamDataSet>();
+            foreach (var item in entityWithSelectSql)
+            {
+                SqlParamDataSet ps = new SqlParamDataSet()
+                {
+                    ExceuteSql = item.Value,
+                    ClassName = item.Key.Name
+                };
+                paramList.Add(ps);
+            }
+            return ReadDataSet(paramList, sqlConnString);
+        }
+        public Dictionary<string, List<Type>> DataSetConvertEntity(DataSet ds, List<Type> entityObj) 
+        {
+            Dictionary<string, List<Type>> entityRow = new Dictionary<string, List<Type>>();
+            foreach (var item in entityObj)
+            {
+                string name = item.Name;
+                DataTable table= ds.Tables[name];
+                if (table == null || table.Rows.Count == 0)
+                {
+                    entityRow.Add(name, new List<Type>());
+                    continue;
+                }
+                List<Type> data=DataTableConvertEntity(table,item ,null);
+                entityRow.Add(name, data);
+            }
+            return entityRow;
+        }
+        public List<Type> DataTableConvertEntity(DataTable table, Type t, Dictionary<string, string> columnMapPropery)
+        {
+            if (columnMapPropery == null)
+            {
+                return FillDataByModel(table, t);
+            }
+            else
+            {
+                return FillDataByRuleDict(table, t, columnMapPropery);
+            }
+        }
+        List<Type> FillDataByModel(DataTable table, Type t) 
+        {
+            Dictionary<string, string> columnMapProperty = new Dictionary<string, string>();
+            //提取数据
+            object[] rely = t.GetCustomAttributes(typeof(TableFieldAttribute), false);
+            if (rely == null || rely.Length == 0)
+            {  //没有匹配关系
+                //建立匹配关系
+            }
+            return FillDataByRuleDict(table, t, columnMapProperty);
+        }
+        List<Type> FillDataByRuleDict(DataTable table, Type t, Dictionary<string, string> columnMapPropery)
+        { //使用匹配字典进行数据填充
+            List<Type> data = new List<Type>();
+            for (int i = 0; i < table.Rows.Count; i++)
+            {
+                DataRow row = table.Rows[i];
+                Type rec= DataRowFillModel(row, t, columnMapPropery);
+                data.Add(rec);
+            }
+            return data;
+        }
+        Type DataRowFillModel(DataRow row, Type t, Dictionary<string, string> columnMapProperty)
+        {
+            Type mt = t.GetType();
+            foreach (var item in columnMapProperty)
+            {
+                object obj = row[item.Key];
+                if (obj == null)
+                {
+                    continue;
+                }
+                PropertyInfo pi = mt.GetProperty(item.Value);
+                if (pi == null)
+                {
+                    continue;
+                }
+                if (pi.GetSetMethod() == null)
+                {//只读属性 
+                    continue;
+                }
+
+                pi.SetValue(mt, Convert.ChangeType(obj,pi.PropertyType), null);
+            }
+            return mt;
+        }
         public class SqlParamDataSet
         {
             public string ClassName { get; set; }
             public string ExceuteSql { get; set; }
             public OracleParameter[] SqlParamArrary { get; set; }
+        }
+        public class Data
+        {
+            public Type TargetClass { get; set; }
+            public Dictionary<string, string> TableColumnMapProperty { get; set; }
         }
     }
 }

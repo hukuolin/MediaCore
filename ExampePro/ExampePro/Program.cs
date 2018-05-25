@@ -72,7 +72,7 @@ namespace ExampePro
         static void GenerateAirData() 
         {
             AirOracleWcf.LinkOracleClient air = new AirOracleWcf.LinkOracleClient();
-            air.GenerateSign(100, DateTime.Now.AddDays(-50));
+            DataSet ds= air.GenerateSign(100, DateTime.Now.AddDays(-50));
         }
     }
 }

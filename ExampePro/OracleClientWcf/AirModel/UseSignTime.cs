@@ -113,6 +113,50 @@ namespace OracleClientWcf
             return dict;
         }
     }
-    
+
+    public class FltScheulde
+    {
+        public string FlightId { get; set; }
+        public DateTime FlightDate { get; set; }
+        public string FlightNo { get; set; }
+        public string PlanDeparture { get; set; }
+        public string DepartureAirport { get; set; }
+        public string PlanArrival { get; set; }
+        public string ArrivalAirport { get; set; }
+        public DateTime Std { get; set; } 
+        string sql = @"flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,
+arrival_airport,std,etd,atd,sta,eta,ata,d_or_i,flight_type,ac_type,ac_reg,flg_delay,flg_vr,flg_cs,flg_patch,off_wheel,
+on_wheel,ac_owner,crew_owner,stew_owner,plce_owner,mant_owner,is_manual,onward_flight,ac_layover,
+flight_flag,sch_com_flag,sch_ver_flag,sch_pub_flag,tele_flag,ftb_prn_flag,ftb_rec_flag,cust_app_flag,
+fly_hours,crew_link_line,stew_link_line,plce_link_line,flight_fen,oper,op_time,remarks,oper_ip,oper_host,
+p_or_c,fxw_id,flg_vip,duty_flag,from_sm,co_old,so_old,po_old,mo_old,dep_bay,arr_bay,fltdate,ao_old,
+flight_id_ref,flt_season,page_flag,ac_link_line,ftb_no,stew_com_flag,stew_ver_flag,stew_pub_flag,
+plce_com_flag,plce_ver_flag,plce_pub_flag,jx_foc_flight_id,spe_service,close_door_time,
+open_door_time,cobt,backup_id,eng_time,taxi_out,ods_id,sch_pub_user,sch_pub_time,backup_type,
+ref_atatime_flag,train_pub_flag,train_pub_user,train_pub_time,flightdatelocal,flightdateutc,
+duty_date,delay_after_takeoff,delay_type,mm_leg_id";
+        public string GetSelectSql()
+        {
+            return @"select 
+flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,arrival_airport,std,
+etd,atd,sta,eta,ata,d_or_i,flight_type,ac_type,ac_reg,flg_delay,flg_vr,flg_cs,flg_patch,off_wheel,on_wheel,
+ac_owner,crew_owner,stew_owner,plce_owner,mant_owner,is_manual,onward_flight,ac_layover,flight_flag,
+sch_com_flag,sch_ver_flag,sch_pub_flag,tele_flag,ftb_prn_flag,ftb_rec_flag,cust_app_flag,fly_hours,
+crew_link_line,stew_link_line,plce_link_line,flight_fen,oper,op_time,remarks,oper_ip,oper_host,p_or_c,
+fxw_id,flg_vip,duty_flag,from_sm,co_old,so_old,po_old,mo_old,dep_bay,arr_bay,fltdate,ao_old,flight_id_ref,
+flt_season,page_flag,ac_link_line,ftb_no,stew_com_flag,stew_ver_flag,stew_pub_flag,plce_com_flag,
+plce_ver_flag,plce_pub_flag,jx_foc_flight_id,spe_service,close_door_time,open_door_time,cobt,backup_id,
+eng_time,taxi_out,ods_id,sch_pub_user,sch_pub_time,backup_type,ref_atatime_flag,train_pub_flag,
+train_pub_user,train_pub_time,flightdatelocal,flightdateutc,duty_date,delay_after_takeoff,delay_type,mm_leg_id
+from t_Flt_Schedule";
+        }
+        public string GetBetweenDaySql(DateTime beginTime,DateTime endTime) 
+        {
+            string format = "yyyy-MM-dd";
+            return GetSelectSql() +
+                string.Format(" where flight_date between to_date('{0}','yyyy-MM-dd') and to_date('{1}','yyyy-MM-dd')",
+                beginTime.ToString(format),endTime.ToString(format));
+        }
+    }
     
 }
