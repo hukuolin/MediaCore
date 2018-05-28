@@ -71,8 +71,10 @@ namespace ExampePro
         }
         static void GenerateAirData() 
         {
+            Console.WriteLine("Call Query Oracle data ......");
             AirOracleWcf.LinkOracleClient air = new AirOracleWcf.LinkOracleClient();
-            DataSet ds= air.GenerateSign(100, DateTime.Now.AddDays(-50));
+            bool succ= air.GenerateSign(100, DateTime.Now.AddDays(-50));
+            Console.WriteLine("Generate result=" + succ);
         }
     }
 }

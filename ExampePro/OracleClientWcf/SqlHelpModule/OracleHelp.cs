@@ -14,6 +14,7 @@ namespace OracleClientWcf
 {
     public class OracleSqlHelp
     {
+        #region 数据查询与填充
         /// <summary>
         /// 准备insert 语句
         /// </summary>
@@ -125,19 +126,19 @@ namespace OracleClientWcf
             }
             return ReadDataSet(paramList, sqlConnString);
         }
-        public Dictionary<string, List<object>> DataSetConvertEntity(DataSet ds, List<object> entityObj) 
+        public Dictionary<string, List<object>> DataSetConvertEntity(DataSet ds, List<EntityDataMapTable> entityObj) 
         {
             Dictionary<string, List<object>> entityRow = new Dictionary<string, List<object>>();
             foreach (var item in entityObj)
             {
-                string name = item.GetType().Name;
+                string name = item.TargetClass.GetType().Name;
                 DataTable table= ds.Tables[name];
                 if (table == null || table.Rows.Count == 0)
                 {
                     entityRow.Add(name, new List<object>());
                     continue;
                 }
-                List<object> data=DataTableConvertEntity(table,item ,null);
+                List<object> data=DataTableConvertEntity(table,item.TargetClass ,item.TableColumnMapProperty);
                 entityRow.Add(name, data);
             }
             return entityRow;
@@ -153,15 +154,31 @@ namespace OracleClientWcf
                 return FillDataByRuleDict(table, t, columnMapPropery);
             }
         }
+        /// <summary>
+        /// 使用实体之间进行建立匹配关系规则，并将数据填充到数据中
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="t"></param>
+        /// <returns></returns>
         List<object> FillDataByModel(DataTable table, object t) 
         {
             Dictionary<string, string> columnMapProperty = new Dictionary<string, string>();
             //提取数据
             Type tt = t.GetType();
             object[] rely = tt.GetCustomAttributes(typeof(TableFieldAttribute), false);
-            if (rely == null || rely.Length == 0)
-            {  //没有匹配关系
-                //建立匹配关系
+            List<string> ignoreField = new List<string>();
+            if (rely.Length> 0)
+            {   //建立匹配关系
+                TableFieldAttribute att = rely[0] as TableFieldAttribute;
+                ignoreField.AddRange(att.IgnoreProperty);
+            }
+            foreach (var item in t.GetAllProperties())
+            {
+                if (ignoreField.Contains(item))
+                {
+                    continue;
+                }
+                columnMapProperty.Add(item, item);
             }
             return FillDataByRuleDict(table, t, columnMapProperty);
         }
@@ -179,9 +196,10 @@ namespace OracleClientWcf
         object DataRowFillModel(DataRow row, object t, Dictionary<string, string> columnMapProperty)
         {
             Type mt = t.GetType();
+            object data = System.Activator.CreateInstance(mt);
             foreach (var item in columnMapProperty)
             {
-                object obj = row[item.Key];
+                object obj = row[item.Key];//需要判断是否存在该列
                 if (obj == null)
                 {
                     continue;
@@ -196,10 +214,12 @@ namespace OracleClientWcf
                     continue;
                 }
 
-                pi.SetValue(mt, Convert.ChangeType(obj,pi.PropertyType), null);
+                pi.SetValue(data, Convert.ChangeType(obj, pi.PropertyType), null);
             }
-            return mt;
+            return data;
         }
+        #endregion
+        #region 扩展封装执行操作的参数
         public class SqlParamDataSet
         {
             public string ClassName { get; set; }
@@ -210,7 +230,98 @@ namespace OracleClientWcf
         {
             public string ExecuteSql { get; set; }
             public object TargetClass { get; set; }
+            /// <summary>
+            /// 列匹配属性的字典关系
+            /// </summary>
             public Dictionary<string, string> TableColumnMapProperty { get; set; }
         }
+        #endregion
+        #region  batch 
+        /// <summary>
+        /// 批量执行【非查询SQL】
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="data"></param>
+        /// <param name="connString"></param>
+        /// <returns></returns>
+        public Dictionary<int, bool> BatchExcuteNoQuery<T>(string sql, List<T> data, string connString) where T : class 
+        {
+            List<SqlParamDataSet> param = new List<SqlParamDataSet>();
+            foreach (var item in data)
+            {
+                //规则提取属性进行参数注入
+                SqlParamDataSet p = GenerateParam(item, sql);
+                param.Add(p);   
+            }
+            return ExecuteListNoQuery(connString, param.ToArray());
+        }
+        SqlParamDataSet GenerateParam<T>(T data, string sql) where T : class
+        {
+            List<OracleParameter> ps = new List<OracleParameter>();
+            SqlParamDataSet param = new SqlParamDataSet() { ClassName=data.GetType().Name};
+            string[] pis = data.GetAllProperties();
+            string paramMapRule = "{(.*?)}";
+            Regex reg = new Regex(paramMapRule);
+            MatchCollection mc = reg.Matches(sql);
+            string objName = param.ClassName;
+            Dictionary<string, object> propertyValue = data.GetAllPorpertiesNameAndValues();
+            Dictionary<string, string> paramMapPropertyRule = new Dictionary<string, string>();
+            foreach (Match item in mc)
+            {
+                string g = item.Groups[0].Value;//参数串
+                string pn = item.Groups[1].Value;//参数名剔除特殊限定
+                string lowerName = pn.ToLower();
+                bool map = false;
+                foreach (var property in propertyValue)
+                {
+                    if (property.Key.ToLower() == lowerName)
+                    {
+                        map = true;
+                        paramMapPropertyRule.Add(g, property.Key);
+                        string name = objName + "_" + property.Key;//oracle 参数规则
+                        sql = sql.Replace(g, ":" + name);
+                        ps.Add(new OracleParameter() { ParameterName = name, Value = property.Value });
+                        break;
+                    }
+                }
+                if (!map)
+                {//属性没有匹配 
+
+                }
+            }
+            param.ExceuteSql = sql;
+            param.SqlParamArrary = ps.ToArray();
+            return param;
+        }
+        public static Dictionary<int, bool> ExecuteListNoQuery(string sqlConnString, SqlParamDataSet[] param)
+        {
+            Dictionary<int, bool> excute = new Dictionary<int, bool>();
+            OracleConnection conn = new OracleConnection(sqlConnString);
+           
+            for (int i = 0; i < param.Length; i++)
+            {
+                SqlParamDataSet item = param[i];
+                try
+                {
+                    OracleCommand comm = new OracleCommand(item.ExceuteSql,conn);
+                    if (conn.State!= ConnectionState.Open) 
+                    {
+                        conn.Open();
+                    }
+                    if (item.SqlParamArrary != null)
+                        comm.Parameters.AddRange(item.SqlParamArrary);
+                    int result = comm.ExecuteNonQuery();
+                    excute.Add(i, true);
+                }
+                catch (Exception ex)
+                {
+                    excute.Add(i, false);
+                }
+            }
+            conn.Close();
+            return excute ;
+        }
+        #endregion
     }
 }

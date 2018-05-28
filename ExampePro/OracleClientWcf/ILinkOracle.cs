@@ -16,7 +16,7 @@ namespace OracleClientWcf
         [OperationContract]
         DataSet QueryAllCREW();
         [OperationContract]
-        DataSet GenerateSign(int daySize, DateTime beginDay);
+        bool GenerateSign(int daySize, DateTime beginDay);
     }
 
 

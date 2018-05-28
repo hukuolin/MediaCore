@@ -45,7 +45,7 @@ namespace OracleClientWcf
             LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
         
         }
-        public DataSet GenerateSign(int daySize,DateTime beginDay) 
+        public bool GenerateSign(int daySize,DateTime beginDay) 
         {
            
             string format = "yyyyMMdd";
@@ -65,19 +65,71 @@ namespace OracleClientWcf
                 {
                      ExecuteSql=flt.GetBetweenDaySql(now.AddDays(-10), now),
                      TargetClass=flt,
-                     TableColumnMapProperty=null
+                     TableColumnMapProperty=flt.ColumnMapProperty()
                 };
+                entityAndSelectSql.Add(fltMap);
                 DataSet ds= oracle.QueryData(entityAndSelectSql, DBAccess.AirDBR5);
                 InsertLog(string.Format("query table=【{0}】",ds.Tables.Count));
-                List<object> models=new List<object>();
-                models.Add(flt);
-                Dictionary<string,List<object> > data= oracle.DataSetConvertEntity(ds, models);
-                return ds;
+                Dictionary<string,List<object> > data= oracle.DataSetConvertEntity(ds, entityAndSelectSql);
+                foreach (var item in data)
+                {
+                    InsertLog(item.Key + " rows=" + item.Value.Count);
+                }
+                List<object> coll = data[flt.GetType().Name];
+                List<decimal> flightIds = new List<decimal>();
+                foreach (var item in coll)
+                {
+                    FltScheulde sch = item as FltScheulde;
+                    flightIds.Add(sch.FlightId);
+                }
+                if (flightIds.Count == 0)
+                {
+                    InsertLog("no t_Flt_Schedule");
+                    return false;
+                }
+                //找出航班计划对应的排班计划
+                SchRoster ros = new SchRoster();
+                string rosterSql = ros.QueryListSqlByFlightIds(flightIds.ToArray());
+                InsertLog(rosterSql);
+                List<OracleSqlHelp.EntityDataMapTable> rosterMap = new List<OracleSqlHelp.EntityDataMapTable>();
+                rosterMap.Add(new OracleSqlHelp.EntityDataMapTable() { TargetClass = ros, ExecuteSql = rosterSql, TableColumnMapProperty = ros.ColumnMapProperty() });
+                DataSet dsRoster = oracle.QueryData(rosterMap, DBAccess.AirDBR5);
+                //提取排班计划
+                Dictionary<string, List<object>> entity = oracle.DataSetConvertEntity(dsRoster, rosterMap);
+                if (entity.Count == 0)
+                {
+                    InsertLog("no set sch_roster data");
+                    return false;
+                }
+                List<UseSignTime> rs = new List<UseSignTime>();
+                foreach (var item in entity[ros.GetType().Name])
+                {
+                    SchRoster r = item as SchRoster;
+                    UseSignTime sign = new UseSignTime()
+                    {
+                        FlightDate = r.FlightDate,
+                        FlightId = r.FlightId,
+                        PCode = r.PCode,
+                        Remarks = "Code Generate Sign Time",
+                        ModuleFlag=r.ModuleFlag
+                    };
+                    UseSignTime.GeneratePlanSignTime(sign, sign.FlightDate);
+                    rs.Add(sign);
+                }
+                //存储人员签到时间数据
+                Dictionary<int, bool> excute= oracle.BatchExcuteNoQuery(UseSignTime.PrepareInsertSql(), rs, DBAccess.AirDBR5);
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in excute)
+                {
+                    sb.AppendLine(item.Key + "=" + item.Value);
+                }
+                InsertLog(sb.ToString());
+                return true;
             }
             catch (Exception ex)
             {
                 InsertLog(ex.Message);
-                return null;
+                return false;
             }
         }
     }

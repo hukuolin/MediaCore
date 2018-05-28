@@ -17,16 +17,14 @@ using Infrastructure.ExtService;
 namespace OracleClientWcf
 {
     [TableField(TableName="")]
-    public class UseSignTime
+    public class UseSignTime : FlightBaseField
     {
         /*
          
          */
-        public string FlightId { get; set; }
-        public DateTime FlightDate { get; set; }
         public string PCode { get; set; }
         public DateTime SignInTime { get; set; }
-        public char ModuleFlag { get; set; }
+        public string ModuleFlag { get; set; }
         public string Oper { get; set; }
         public DateTime OpTime { get; set; }
         public string Remarks { get; set; }
@@ -35,29 +33,55 @@ namespace OracleClientWcf
         public DateTime PlanSignInTime { get; set; }
         public DateTime PlanLeavingTime { get; set; }
         public DateTime LeavingTime { get; set; }
-        string[] db = new string[] { "flight_id", "flight_date", "p_code", "sign_in_time", "module_flag", "oper", "op_time", "remarks", "oper_ip", "oper_host", "plan_sign_in_time", "plan_leaving_time", "leaving_time" };
-       
-        public void GenerateMuchDay(int day, DateTime startDayTime, string connString)
+        static Dictionary<string, string> ColumnMapProperty() 
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("flight_id", "FlightId");
+            dict.Add("flight_date", "FlightDate");
+            dict.Add("p_code", "PCode");
+            dict.Add("sign_in_time", "SignInTime");
+            dict.Add("module_flag", "ModuleFlag");
+            dict.Add("op_time", "OpTime");
+            dict.Add("remarks", "Remarks");
+            dict.Add("plan_sign_in_time", "PlanSignInTime");
+            dict.Add("plan_leaving_time", "PlanLeavingTime");
+            dict.Add("leaving_time", "LeavingTime");
+            return dict;
+        }
+        /// <summary>
+        /// 生成随机的签到时间【含计划】
+        /// </summary>
+        /// <param name="use"></param>
+        /// <param name="startDayTime">对应FlightDate</param>
+        public static void GeneratePlanSignTime(UseSignTime use, DateTime startDayTime)
         {
             Guid hash = Guid.NewGuid();
             int seed = hash.GetHashCode();
             int minSignTimeMinute = 30;
             int maxSignTimeMinute = 120;
-            for (int i = 0; i < day; i++)
-            {//根据开始的时间计算
-                Random ran = new Random(seed);
-                int signTime = ran.Next(minSignTimeMinute, maxSignTimeMinute);
-                DateTime time = startDayTime.AddDays(i);
-
-            }
-            UseSignTime use = new UseSignTime();
+            Random ran = new Random(seed);
+            int signTime = ran.Next(minSignTimeMinute, maxSignTimeMinute);
+            DateTime time = startDayTime.AddMinutes(signTime);
+            use.PlanLeavingTime = time;
+            int sign = ran.Next(10, 30);
+            use.PlanSignInTime = time.AddMinutes(-sign);
+            use.OpTime = DateTime.Now;
+            use.SignInTime = time.AddMinutes(-ran.Next(10, 30));
+            use.LeavingTime = startDayTime.AddMinutes(ran.Next(240, 480));
+            //功能调整
+            /*
             OracleSqlHelp oracle = new OracleSqlHelp();
             MapClassVsTable map = new MapClassVsTable();
             Dictionary<string, string> dict = map.MapPropertyVsDBColumn<UseSignTime>(db);
             string sql = oracle.PrepareInsertSql<UseSignTime>(dict);
             LoggerWriter.CreateLogFile(sql, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData,DateTime.Now.ToString("yyyyMMdd")+".log",true);
             OracleParameter[] ps = oracle.PrepareParamBySql(use, sql);
-
+            */
+        }
+        public static string PrepareInsertSql() 
+        {
+            Dictionary<string,string> dict=ColumnMapProperty();
+            return "insert into    t_Sch_Sign_In_Time (" + string.Join(",", dict.Keys) + ") values({"+string.Join("},{" ,dict.Values)+"})";
         }
     }
     public class MapClassVsTable
@@ -113,11 +137,9 @@ namespace OracleClientWcf
             return dict;
         }
     }
-
-    public class FltScheulde
+    #region 航班计划
+    public class FltScheulde : FlightBaseField
     {
-        public string FlightId { get; set; }
-        public DateTime FlightDate { get; set; }
         public string FlightNo { get; set; }
         public string PlanDeparture { get; set; }
         public string DepartureAirport { get; set; }
@@ -150,6 +172,19 @@ eng_time,taxi_out,ods_id,sch_pub_user,sch_pub_time,backup_type,ref_atatime_flag,
 train_pub_user,train_pub_time,flightdatelocal,flightdateutc,duty_date,delay_after_takeoff,delay_type,mm_leg_id
 from t_Flt_Schedule";
         }
+        public Dictionary<string, string> ColumnMapProperty()
+        {
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("flight_id", "FlightId");
+            dict.Add("flight_date", "FlightDate");
+            dict.Add("flight_no", "FlightNo");
+            dict.Add("departure_airport", "DepartureAirport");
+            dict.Add("arrival_airport", "ArrivalAirport");
+            dict.Add("plan_arrival", "PlanArrival");
+            dict.Add("plan_departure", "PlanDeparture");
+            dict.Add("Std", "Std");
+            return dict;
+        }
         public string GetBetweenDaySql(DateTime beginTime,DateTime endTime) 
         {
             string format = "yyyy-MM-dd";
@@ -158,5 +193,35 @@ from t_Flt_Schedule";
                 beginTime.ToString(format),endTime.ToString(format));
         }
     }
+    #endregion
+    #region 机组排班计划
+    public class SchRoster : FlightBaseField
+    {
+        public Dictionary<string, string> ColumnMapProperty() 
+        {
+        //flight_id,flight_date,p_code
+            Dictionary<string, string> dict = new Dictionary<string, string>();
+            dict.Add("flight_id", "FlightId");
+            dict.Add("flight_date", "FlightDate");
+            dict.Add("p_code", "PCode");
+            dict.Add("MODULE_FLAG", "ModuleFlag");
+            return dict;
+        }
+        
+        public string PCode { get; set; }
+        public string ModuleFlag { get; set; }
+        public string QueryListSqlByFlightIds(decimal[] ids) 
+        {
+            return "select " + string.Join(",", ColumnMapProperty().Keys) + " from t_Sch_Roster where flight_id in ('" + string.Join("','", ids) + "')";
+        }
+    }
+    #region 航班公用字段
+    public class FlightBaseField
+    {
+        public decimal FlightId { get; set; }
+        public DateTime FlightDate { get; set; }
+    }
+    #endregion
+    #endregion
     
 }
