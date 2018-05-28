@@ -61,9 +61,11 @@ namespace OracleClientWcf
                 string sql = DBAccess.AirDBR5;
                 List<OracleSqlHelp.EntityDataMapTable> entityAndSelectSql = new List<OracleSqlHelp.EntityDataMapTable>();
                 DateTime now=DateTime.Now;
+                string fltSql=flt.GetBetweenDaySql(now.AddDays(-daySize/2), now.AddDays(daySize-daySize/2));
+                InsertLog(fltSql);
                 OracleSqlHelp.EntityDataMapTable fltMap = new OracleSqlHelp.EntityDataMapTable() 
                 {
-                     ExecuteSql=flt.GetBetweenDaySql(now.AddDays(-10), now),
+                    ExecuteSql = fltSql,
                      TargetClass=flt,
                      TableColumnMapProperty=flt.ColumnMapProperty()
                 };

@@ -212,7 +212,7 @@ from t_Flt_Schedule";
         public string ModuleFlag { get; set; }
         public string QueryListSqlByFlightIds(decimal[] ids) 
         {
-            return "select " + string.Join(",", ColumnMapProperty().Keys) + " from t_Sch_Roster where flight_id in ('" + string.Join("','", ids) + @"')
+            return "select " + string.Join(",", ColumnMapProperty().Keys) + " from t_Sch_Roster r where flight_id in ('" + string.Join("','", ids) + @"')
 and  not exists
 (select flight_id from t_Sch_Sign_In_Time where flight_id=r.flight_id and p_code=r.p_code)";
         }
