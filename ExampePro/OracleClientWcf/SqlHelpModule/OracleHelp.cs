@@ -110,38 +110,39 @@ namespace OracleClientWcf
             conn.Close();
             return ds;
         }
-        public DataSet QueryData(Dictionary<Type, string> entityWithSelectSql,string sqlConnString)
+        public DataSet QueryData(List<EntityDataMapTable>  entityWithSelectSql,string sqlConnString)
         {
             List<SqlParamDataSet> paramList = new List<SqlParamDataSet>();
-            foreach (var item in entityWithSelectSql)
+            foreach (EntityDataMapTable item in entityWithSelectSql)
             {
+                Type t = item.TargetClass.GetType();
                 SqlParamDataSet ps = new SqlParamDataSet()
                 {
-                    ExceuteSql = item.Value,
-                    ClassName = item.Key.Name
+                    ExceuteSql = item.ExecuteSql,
+                    ClassName =t.Name
                 };
                 paramList.Add(ps);
             }
             return ReadDataSet(paramList, sqlConnString);
         }
-        public Dictionary<string, List<Type>> DataSetConvertEntity(DataSet ds, List<Type> entityObj) 
+        public Dictionary<string, List<object>> DataSetConvertEntity(DataSet ds, List<object> entityObj) 
         {
-            Dictionary<string, List<Type>> entityRow = new Dictionary<string, List<Type>>();
+            Dictionary<string, List<object>> entityRow = new Dictionary<string, List<object>>();
             foreach (var item in entityObj)
             {
-                string name = item.Name;
+                string name = item.GetType().Name;
                 DataTable table= ds.Tables[name];
                 if (table == null || table.Rows.Count == 0)
                 {
-                    entityRow.Add(name, new List<Type>());
+                    entityRow.Add(name, new List<object>());
                     continue;
                 }
-                List<Type> data=DataTableConvertEntity(table,item ,null);
+                List<object> data=DataTableConvertEntity(table,item ,null);
                 entityRow.Add(name, data);
             }
             return entityRow;
         }
-        public List<Type> DataTableConvertEntity(DataTable table, Type t, Dictionary<string, string> columnMapPropery)
+        public List<object> DataTableConvertEntity(DataTable table, object t, Dictionary<string, string> columnMapPropery)
         {
             if (columnMapPropery == null)
             {
@@ -152,29 +153,30 @@ namespace OracleClientWcf
                 return FillDataByRuleDict(table, t, columnMapPropery);
             }
         }
-        List<Type> FillDataByModel(DataTable table, Type t) 
+        List<object> FillDataByModel(DataTable table, object t) 
         {
             Dictionary<string, string> columnMapProperty = new Dictionary<string, string>();
             //提取数据
-            object[] rely = t.GetCustomAttributes(typeof(TableFieldAttribute), false);
+            Type tt = t.GetType();
+            object[] rely = tt.GetCustomAttributes(typeof(TableFieldAttribute), false);
             if (rely == null || rely.Length == 0)
             {  //没有匹配关系
                 //建立匹配关系
             }
             return FillDataByRuleDict(table, t, columnMapProperty);
         }
-        List<Type> FillDataByRuleDict(DataTable table, Type t, Dictionary<string, string> columnMapPropery)
+        List<object> FillDataByRuleDict(DataTable table, object t, Dictionary<string, string> columnMapPropery)
         { //使用匹配字典进行数据填充
-            List<Type> data = new List<Type>();
+            List<object> data = new List<object>();
             for (int i = 0; i < table.Rows.Count; i++)
             {
                 DataRow row = table.Rows[i];
-                Type rec= DataRowFillModel(row, t, columnMapPropery);
+                object rec= DataRowFillModel(row, t, columnMapPropery);
                 data.Add(rec);
             }
             return data;
         }
-        Type DataRowFillModel(DataRow row, Type t, Dictionary<string, string> columnMapProperty)
+        object DataRowFillModel(DataRow row, object t, Dictionary<string, string> columnMapProperty)
         {
             Type mt = t.GetType();
             foreach (var item in columnMapProperty)
@@ -204,9 +206,10 @@ namespace OracleClientWcf
             public string ExceuteSql { get; set; }
             public OracleParameter[] SqlParamArrary { get; set; }
         }
-        public class Data<T> where T:class
+        public class EntityDataMapTable  
         {
-            public T TargetClass { get; set; }
+            public string ExecuteSql { get; set; }
+            public object TargetClass { get; set; }
             public Dictionary<string, string> TableColumnMapProperty { get; set; }
         }
     }

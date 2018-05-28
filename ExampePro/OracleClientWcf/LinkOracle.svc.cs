@@ -59,14 +59,19 @@ namespace OracleClientWcf
                 FltScheulde flt = new FltScheulde();
                 OracleSqlHelp oracle = new OracleSqlHelp();
                 string sql = DBAccess.AirDBR5;
-                Dictionary<Type,string> entityAndSelectSql=new Dictionary<Type,string>();
+                List<OracleSqlHelp.EntityDataMapTable> entityAndSelectSql = new List<OracleSqlHelp.EntityDataMapTable>();
                 DateTime now=DateTime.Now;
-                entityAndSelectSql.Add(typeof(FltScheulde), flt.GetBetweenDaySql(now.AddDays(-10), now));
+                OracleSqlHelp.EntityDataMapTable fltMap = new OracleSqlHelp.EntityDataMapTable() 
+                {
+                     ExecuteSql=flt.GetBetweenDaySql(now.AddDays(-10), now),
+                     TargetClass=flt,
+                     TableColumnMapProperty=null
+                };
                 DataSet ds= oracle.QueryData(entityAndSelectSql, DBAccess.AirDBR5);
                 InsertLog(string.Format("query table=【{0}】",ds.Tables.Count));
-                List<Type> models=new List<Type>();
-                models.Add(typeof(FltScheulde));
-                Dictionary<string,List<Type> > data= oracle.DataSetConvertEntity(ds, models);
+                List<object> models=new List<object>();
+                models.Add(flt);
+                Dictionary<string,List<object> > data= oracle.DataSetConvertEntity(ds, models);
                 return ds;
             }
             catch (Exception ex)
