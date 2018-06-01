@@ -33,6 +33,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CommonHelperEntity">
+      <HintPath>..\Dll\SelfExt\CommonHelperEntity.dll</HintPath>
+    </Reference>
+    <Reference Include="Domain.CommonData">
+      <HintPath>..\Dll\SelfExt\Domain.CommonData.dll</HintPath>
+    </Reference>
+    <Reference Include="Domain.GlobalModel">
+      <HintPath>..\Dll\SelfExt\Domain.GlobalModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Infrastructure.ExtService">
+      <HintPath>..\Dll\SelfExt\Infrastructure.ExtService.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dll\Newtonsoft.Json.dll</HintPath>
@@ -109,6 +121,9 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="GenerateClass\ClassProperty.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Note\Exception.txt" />
     <None Include="Service References\AirOracleWcf\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>

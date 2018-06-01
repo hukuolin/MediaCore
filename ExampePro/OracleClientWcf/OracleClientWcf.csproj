@@ -82,6 +82,7 @@
   <ItemGroup>
     <Content Include="ExampleObj.svc" />
     <Content Include="LinkOracle.svc" />
+    <Compile Include="AirModel\TechInfo.cs" />
     <Compile Include="AirModel\UseSignTime.cs" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
