@@ -116,5 +116,11 @@ namespace ExampePro
             return dir + "/" + file;
         }
     }
+    public class GenerateClassSetting
+    {
+        public string NameSpace { get; set; }
+        public string ClassName { get; set; }
+        public string PropertyListStr { get; set; }
+    }
     #endregion
 }

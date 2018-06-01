@@ -134,5 +134,9 @@ namespace OracleClientWcf
                 return false;
             }
         }
+        public void BatchSetLicense() 
+        {
+            string sql = "";
+        }
     }
 }
