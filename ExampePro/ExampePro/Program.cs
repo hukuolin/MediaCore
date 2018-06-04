@@ -85,7 +85,7 @@ namespace ExampePro
             string fromFile = dir+@"\GenerateClass\ClassProperty.txt";
             //读取文件中的属性
             string property = CommonHelperEntity.FileFormatExt.ReadFileUtf8Text(fromFile);
-            string file = "Log";
+            string file = "FltSchedule";
             GenerateMoldeFile.GenerateClassFile(dir,file, "Model", "Generate", property, "\r\n");
         }
     }
@@ -103,7 +103,8 @@ namespace ExampePro
             List<string> ps = new List<string>();
             foreach (var item in propertyList.Split(new string[] { spiltSign }, StringSplitOptions.None))
             {
-                sb.AppendLine(property.Replace("{P}", item));
+                if (!string.IsNullOrEmpty(item))
+                    sb.AppendLine(property.Replace("{P}", item));
             }
             sb.AppendLine("}\r\n}");
             return sb.ToString();

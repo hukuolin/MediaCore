@@ -225,7 +225,8 @@ and  not exists
     }
     #endregion
     #endregion
-    #region 授权许可证
+    #region 获取库中航班计划数据
+    
     
     #endregion
 }
