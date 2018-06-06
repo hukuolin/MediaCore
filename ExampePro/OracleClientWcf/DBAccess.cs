@@ -259,4 +259,26 @@ namespace OracleClientWcf
             return ds;
         }
     }
+    public class AppConfig
+    {
+        static string GetConfigAppSetting(string key)
+        {
+            return ConfigurationManager.AppSettings[key];
+        }
+        
+        
+        public static int GenerateHowDaySchedule
+        {
+            get
+            {
+                string cfg = GetConfigAppSetting("GenerateDayNumber");
+                int day = 1;
+                if (!int.TryParse(cfg, out day))
+                {
+                    return 1;
+                }
+                return day;
+            }
+        }
+    }
 }

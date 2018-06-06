@@ -17,6 +17,8 @@ namespace OracleClientWcf
         DataSet QueryAllCREW();
         [OperationContract]
         bool GenerateSign(int daySize, DateTime beginDay);
+        [OperationContract]
+        bool TemplateInsertFltSchedule(PageParam param);
     }
 
 

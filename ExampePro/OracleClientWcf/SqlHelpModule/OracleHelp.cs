@@ -10,6 +10,7 @@ using Infrastructure.ExtService;
 using System.Data;
 using Domain.GlobalModel;
 using System.Reflection;
+using System.ComponentModel;
 namespace OracleClientWcf
 {
     public class OracleSqlHelp
@@ -117,11 +118,7 @@ namespace OracleClientWcf
             foreach (EntityDataMapTable item in entityWithSelectSql)
             {
                 Type t = item.TargetClass.GetType();
-                SqlParamDataSet ps = new SqlParamDataSet()
-                {
-                    ExceuteSql = item.ExecuteSql,
-                    ClassName =t.Name
-                };
+                SqlParamDataSet ps= GenerateParam(item.TargetClass, item.ExecuteSql);
                 paramList.Add(ps);
             }
             return ReadDataSet(paramList, sqlConnString);
@@ -131,7 +128,7 @@ namespace OracleClientWcf
             Dictionary<string, List<object>> entityRow = new Dictionary<string, List<object>>();
             foreach (var item in entityObj)
             {
-                string name = item.TargetClass.GetType().Name;
+                string name =!string.IsNullOrEmpty(item.TableName)?item.TableName: item.TargetClass.GetType().Name;
                 DataTable table= ds.Tables[name];
                 if (table == null || table.Rows.Count == 0)
                 {
@@ -170,6 +167,7 @@ namespace OracleClientWcf
             if (rely.Length> 0)
             {   //建立匹配关系
                 TableFieldAttribute att = rely[0] as TableFieldAttribute;
+                if (att.IgnoreProperty!=null)
                 ignoreField.AddRange(att.IgnoreProperty);
             }
             foreach (var item in t.GetAllProperties())
@@ -197,25 +195,7 @@ namespace OracleClientWcf
         {
             Type mt = t.GetType();
             object data = System.Activator.CreateInstance(mt);
-            foreach (var item in columnMapProperty)
-            {
-                object obj = row[item.Key];//需要判断是否存在该列
-                if (obj == null)
-                {
-                    continue;
-                }
-                PropertyInfo pi = mt.GetProperty(item.Value);
-                if (pi == null)
-                {
-                    continue;
-                }
-                if (pi.GetSetMethod() == null)
-                {//只读属性 
-                    continue;
-                }
-
-                pi.SetValue(data, Convert.ChangeType(obj, pi.PropertyType), null);
-            }
+            DataReflection.FillRowIntoEntity(data, row, columnMapProperty);
             return data;
         }
         #endregion
@@ -234,6 +214,7 @@ namespace OracleClientWcf
             /// 列匹配属性的字典关系
             /// </summary>
             public Dictionary<string, string> TableColumnMapProperty { get; set; }
+            public string TableName { get; set; }
         }
         #endregion
         #region  batch 
@@ -304,13 +285,26 @@ namespace OracleClientWcf
                 SqlParamDataSet item = param[i];
                 try
                 {
+                    foreach (var p in param[i].SqlParamArrary)
+                    {
+                        string format = string.Empty;
+                        if (p.Value.GetType().Name.Contains(typeof(DateTime).Name))
+                        {
+                            format = Common.Data.CommonFormat.DateTimeFormat;
+                            string time = p.Value.ToString();
+                           string val=  DateTime.Parse(time).ToString(format);
+                           param[i].ExceuteSql = param[i].ExceuteSql.Replace(":" + p.ParameterName, val);
+                        }else
+
+                        param[i].ExceuteSql = param[i].ExceuteSql.Replace(":" + p.ParameterName, p.Value.ToString());
+                    }
                     OracleCommand comm = new OracleCommand(item.ExceuteSql,conn);
                     if (conn.State!= ConnectionState.Open) 
                     {
                         conn.Open();
                     }
-                    if (item.SqlParamArrary != null)
-                        comm.Parameters.AddRange(item.SqlParamArrary);
+                    //if (item.SqlParamArrary != null)
+                    //    comm.Parameters.AddRange(item.SqlParamArrary);
                     int result = comm.ExecuteNonQuery();
                     excute.Add(i, true);
                 }

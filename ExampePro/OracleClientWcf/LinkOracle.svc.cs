@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -8,6 +9,8 @@ using System.Text;
 using System.Data;
 using Infrastructure.ExtService;
 using Domain.CommonData;
+
+
 namespace OracleClientWcf
 {
     // 注意: 使用“重构”菜单上的“重命名”命令，可以同时更改代码、svc 和配置文件中的类名“Service1”。
@@ -42,6 +45,7 @@ namespace OracleClientWcf
         {
             string format = "yyyyMMdd";
             string time = DateTime.Now.ToString(format) + ".log";
+            text = DateTime.Now.ToString(Common.Data.CommonFormat.DateTimeFormat)+"\t"+text;
             LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
         
         }
@@ -56,7 +60,7 @@ namespace OracleClientWcf
                     new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
                 UseSignTime map = new UseSignTime();
                 // map.GenerateMuchDay(daySize, beginDay, DBAccess.AirDBR5);
-                FltScheulde flt = new FltScheulde();
+                FltSchedule flt = new FltSchedule();
                 OracleSqlHelp oracle = new OracleSqlHelp();
                 string sql = DBAccess.AirDBR5;
                 List<OracleSqlHelp.EntityDataMapTable> entityAndSelectSql = new List<OracleSqlHelp.EntityDataMapTable>();
@@ -81,7 +85,7 @@ namespace OracleClientWcf
                 List<decimal> flightIds = new List<decimal>();
                 foreach (var item in coll)
                 {
-                    FltScheulde sch = item as FltScheulde;
+                    FltSchedule sch = item as FltSchedule;
                     flightIds.Add(sch.FlightId);
                 }
                 if (flightIds.Count == 0)
@@ -137,6 +141,76 @@ namespace OracleClientWcf
         public void BatchSetLicense() 
         {
             string sql = "";
+        }
+
+
+        public bool TemplateInsertFltSchedule(PageParam param)
+        {
+            //查询数据总量
+            try
+            {
+                string sql = new FltSchedule().GenerateSelectSqlByPage();
+                OracleSqlHelp oracle = new OracleSqlHelp();
+                OracleSqlHelp.EntityDataMapTable fltMap = new OracleSqlHelp.EntityDataMapTable()
+                {
+                    ExecuteSql = sql,
+                    TargetClass = param,
+                    TableColumnMapProperty = null
+                };
+                List<OracleSqlHelp.EntityDataMapTable> cl = new List<OracleSqlHelp.EntityDataMapTable>();
+                cl.Add(fltMap);
+                DataSet ds = oracle.QueryData(cl, DBAccess.AirDBR5);
+                string table=typeof(PageParam).Name;
+                OracleSqlHelp.EntityDataMapTable result = new OracleSqlHelp.EntityDataMapTable()
+                {
+                    ExecuteSql = sql,
+                    TargetClass = new FltScheduleFullField(),
+                    TableColumnMapProperty = null,
+                    TableName = table
+                };
+                List<OracleSqlHelp.EntityDataMapTable> data = new List<OracleSqlHelp.EntityDataMapTable>();
+                data.Add(result);
+                Dictionary<string, List<object>> entity = oracle.DataSetConvertEntity(ds, data);
+                if (entity.Count == 0)
+                {
+                    InsertLog("no set sch_roster data");
+                    return false;
+                }
+                List<FltScheduleFullField> rs = new List<FltScheduleFullField>();
+                int copyNumber = AppConfig.GenerateHowDaySchedule;
+                foreach (var item in entity[table])
+                {
+                    for (int day = 0; day < copyNumber; day++)
+                    {
+                        FltScheduleFullField field = item as FltScheduleFullField;
+                        string id = new FltScheduleAPI.FltManagerContractClient().InsertFlight_id();
+                        field.flight_id =Convert.ToDecimal(id);
+                        field.op_time = DateTime.Now;
+                        field.remarks = "Third Api Generate Data";
+                        field.SetAsNowYearData(day);
+                        rs.Add(field);
+                    }
+                }
+                //批量写入
+                SqlHelp help = new SqlHelp();
+                string format = "yyyy-mm-dd hh24:mi:ss";
+                string sqlInsert = @"insert into T_FLT_SCHEDULE
+(op_time,remarks,flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,arrival_airport,std,etd,sta,eta)
+values(to_date('{op_time}','{format}'),'{remarks}',{flight_id},to_date('{flight_date}','yyyy-MM-dd'),'{carrier}','{flight_no}','{plan_departure}','{departure_airport}','{plan_arrival}','{arrival_airport}',to_date('{std}','{format}'),to_date('{etd}' ,'{format}'),to_date('{sta}' ,'{format}'),to_date('{eta}' ,'{format}'))".Replace("{format}", format);// help.PrepareInsertSQL<FltScheduleFullField>(null);
+                Dictionary<int,bool> res= oracle.BatchExcuteNoQuery(sqlInsert, rs, DBAccess.AirDBR5);
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in res)
+                {
+                    sb.AppendLine(item.Key + "=" + item.Value);
+                }
+                InsertLog("Total:" + rs.Count+"\r\n"+sb.ToString());
+            }
+            catch (Exception ex)
+            {
+                InsertLog("error:"+ex.Message);
+                return false;
+            }
+            return false;
         }
     }
 }

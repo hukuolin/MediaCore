@@ -11,6 +11,8 @@ namespace ExampePro
     {
         static void Main(string[] args)
         {
+            SyncOldFltSchedult();
+            return;
             GenerateClassFile();
             return;
             GenerateAirData();
@@ -87,6 +89,13 @@ namespace ExampePro
             string property = CommonHelperEntity.FileFormatExt.ReadFileUtf8Text(fromFile);
             string file = "FltSchedule";
             GenerateMoldeFile.GenerateClassFile(dir,file, "Model", "Generate", property, "\r\n");
+        }
+        static void SyncOldFltSchedult() 
+        {
+            AirOracleWcf.LinkOracleClient cl = new AirOracleWcf.LinkOracleClient();
+            DateTime now = DateTime.Now;
+
+            cl.TemplateInsertFltSchedule(new AirOracleWcf.PageParam() { BeginRow = 1, EndRow = 30, BeginTime =AppConfig.ScheduleBeingDateTime, EndTime = AppConfig.ScheduleEndDateTime });
         }
     }
     #region 授权许可证

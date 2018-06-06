@@ -82,8 +82,17 @@
   <ItemGroup>
     <Content Include="ExampleObj.svc" />
     <Content Include="LinkOracle.svc" />
+    <Compile Include="AirModel\FltSchedule.cs" />
     <Compile Include="AirModel\TechInfo.cs" />
     <Compile Include="AirModel\UseSignTime.cs" />
+    <Content Include="Properties\DataSources\System.Data.DataSet.datasource" />
+    <None Include="Service References\FltScheduleAPI\FltManagerService.disco" />
+    <None Include="Service References\FltScheduleAPI\configuration91.svcinfo" />
+    <None Include="Service References\FltScheduleAPI\configuration.svcinfo" />
+    <None Include="Service References\FltScheduleAPI\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -98,6 +107,11 @@
       <DependentUpon>LinkOracle.svc</DependentUpon>
     </Compile>
     <Compile Include="ILinkOracle.cs" />
+    <Compile Include="Service References\FltScheduleAPI\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="SqlHelpModule\CommonSqlHelp.cs" />
     <Compile Include="SqlHelpModule\OracleHelp.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -106,12 +120,34 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Service References\FltScheduleAPI\FltManagerService.wsdl" />
+    <None Include="Service References\FltScheduleAPI\FltManagerService.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\FltScheduleAPI\FltManagerService1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\FltScheduleAPI\FltManagerService2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\FltScheduleAPI\FltManagerService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\FltScheduleAPI\FltManagerService4.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\FltScheduleAPI\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

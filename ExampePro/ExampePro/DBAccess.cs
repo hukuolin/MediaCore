@@ -259,4 +259,58 @@ namespace ExampePro
             return ds;
         }
     }
+    public class AppConfig
+    {
+        static string ScheduleBeginDate
+        {
+            get { return GetConfigAppSetting("ScheduleBeginDate"); }
+        }
+        static string GetConfigAppSetting(string key)
+        {
+            return ConfigurationManager.AppSettings[key];
+        }
+        static string ScheduleEndDate
+        {
+            get { return GetConfigAppSetting("ScheduleEndDate"); }
+        }
+        public static DateTime ScheduleBeingDateTime
+        {
+            get 
+            {
+                string cfg = ScheduleBeginDate;
+                DateTime begin;
+                if (!DateTime.TryParse(cfg, out begin)) 
+                {
+                    return DateTime.Now.AddDays(-1);
+                }
+                return begin;
+            }
+        }
+        public static DateTime ScheduleEndDateTime
+        {
+            get 
+            {
+                string cfg = ScheduleEndDate;
+                DateTime begin;
+                if (!DateTime.TryParse(cfg, out begin))
+                {
+                    return ScheduleBeingDateTime.AddDays(1);
+                }
+                return begin;
+            }
+        }
+        public static int GenerateHowDaySchedule
+        {
+            get
+            {
+                string cfg = GetConfigAppSetting("GenerateDayNumber");
+                int day = 1;
+                if (!int.TryParse(cfg, out day))
+                {
+                    return 1;
+                }
+                return day;
+            }
+        }
+    }
 }

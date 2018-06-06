@@ -33,8 +33,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Common.Data, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dll\SelfExt\Common.Data.dll</HintPath>
+    </Reference>
     <Reference Include="CommonHelperEntity">
       <HintPath>..\Dll\SelfExt\CommonHelperEntity.dll</HintPath>
+    </Reference>
+    <Reference Include="DataHelp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dll\SelfExt\DataHelp.dll</HintPath>
     </Reference>
     <Reference Include="Domain.CommonData">
       <HintPath>..\Dll\SelfExt\Domain.CommonData.dll</HintPath>
@@ -94,6 +102,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\AirOracleWcf\LinkOracle2.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\AirOracleWcf\LinkOracle3.xsd">
       <SubType>Designer</SubType>
     </None>
     <None Include="Service References\OracleClientExample\LinkOracle.wsdl" />

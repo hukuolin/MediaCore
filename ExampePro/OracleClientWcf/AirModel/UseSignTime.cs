@@ -138,7 +138,7 @@ namespace OracleClientWcf
         }
     }
     #region 航班计划
-    public class FltScheulde : FlightBaseField
+    public class FltSchedule : FlightBaseField
     {
         public string FlightNo { get; set; }
         public string PlanDeparture { get; set; }
@@ -146,7 +146,7 @@ namespace OracleClientWcf
         public string PlanArrival { get; set; }
         public string ArrivalAirport { get; set; }
         public DateTime Std { get; set; } 
-        string sql = @"flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,
+        string column = @"flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,
 arrival_airport,std,etd,atd,sta,eta,ata,d_or_i,flight_type,ac_type,ac_reg,flg_delay,flg_vr,flg_cs,flg_patch,off_wheel,
 on_wheel,ac_owner,crew_owner,stew_owner,plce_owner,mant_owner,is_manual,onward_flight,ac_layover,
 flight_flag,sch_com_flag,sch_ver_flag,sch_pub_flag,tele_flag,ftb_prn_flag,ftb_rec_flag,cust_app_flag,
@@ -191,6 +191,21 @@ from t_Flt_Schedule";
             return GetSelectSql() +
                 string.Format(" where flight_date between to_date('{0}','yyyy-MM-dd') and to_date('{1}','yyyy-MM-dd')",
                 beginTime.ToString(format),endTime.ToString(format));
+        }
+        public string GenerateCountSql(DateTime begin,DateTime end) 
+        {
+            return "select count(*) from t_Flt_Schedule  " + string.Format(" where flight_date between to_date('{0}','yyyy-MM-dd') and to_date('{1}','yyyy-MM-dd')");
+        }
+        /// <summary>
+        /// 查询非备份数据
+        /// </summary>
+        /// <returns></returns>
+        public string GenerateSelectSqlByPage()
+        {
+            return @"select r,{column} from 
+                    (
+                           select rownum r,{column} from t_Flt_Schedule t where flight_date between {BeginTime} and {EndTime} and flight_flag<>'B'
+                    )where r>={BeginRow} and r<={EndRow}".Replace("{column}", column);
         }
     }
     #endregion

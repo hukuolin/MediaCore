@@ -14,7 +14,7 @@ namespace OracleClientWcf
         /// 
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="propertyMapColumnDict">属性匹配列的字典</param>
+        /// <param name="propertyMapColumnDict">属性匹配列的字典【如果属性没有设置则认为规则为实体】</param>
         /// <returns></returns>
         public string PrepareInsertSQL<T>(Dictionary<string, string> propertyMapColumnDict) where T : class
         {
@@ -34,6 +34,15 @@ namespace OracleClientWcf
 
             List<string> columns = new List<string>();
             List<string> dbColumn = new List<string>();
+            if (propertyMapColumnDict == null || propertyMapColumnDict.Count == 0)
+            {
+                propertyMapColumnDict = new Dictionary<string, string>();
+                foreach (var item in ty.GetProperties())
+                {
+                    if (!ignoreField.Contains(item.Name))
+                        propertyMapColumnDict.Add(item.Name, item.Name);
+                }
+            }
             foreach (PropertyInfo item in ty.GetProperties())
             {
                 string pn = item.Name;
