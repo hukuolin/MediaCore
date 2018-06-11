@@ -1,0 +1,24 @@
+﻿2018-06-11 10:08:20	Create  time=[ 2017-06-01 ~ 2017-06-01] after day [1] success.
+2018-06-11 10:22:50	Create  time=[ 2017-06-01 ~ 2017-06-01] after day [1] happend exception,
+System.TimeoutException: 请求通道在等待 00:00:59.8281671 以后答复时超时。增加传递给请求调用的超时值，或者增加绑定上的 SendTimeout 值。分配给此操作的时间可能已经是更长超时的一部分。 ---> System.TimeoutException: 对“http://localhost:180/LinkOracle.svc”的 HTTP 请求已超过为 00:00:59.9060000 分配的超时。为此操作分配的时间可能是较长超时的一部分。 ---> System.Net.WebException: 操作超时
+   在 System.Net.HttpWebRequest.GetResponse()
+   在 System.ServiceModel.Channels.HttpChannelFactory`1.HttpRequestChannel.HttpChannelRequest.WaitForReply(TimeSpan timeout)
+   --- 内部异常堆栈跟踪的结尾 ---
+   在 System.ServiceModel.Channels.HttpChannelUtilities.ProcessGetResponseWebException(WebException webException, HttpWebRequest request, HttpAbortReason abortReason)
+   在 System.ServiceModel.Channels.HttpChannelFactory`1.HttpRequestChannel.HttpChannelRequest.WaitForReply(TimeSpan timeout)
+   在 System.ServiceModel.Channels.RequestChannel.Request(Message message, TimeSpan timeout)
+   --- 内部异常堆栈跟踪的结尾 ---
+
+Server stack trace: 
+   在 System.ServiceModel.Channels.RequestChannel.Request(Message message, TimeSpan timeout)
+   在 System.ServiceModel.Dispatcher.RequestChannelBinder.Request(Message message, TimeSpan timeout)
+   在 System.ServiceModel.Channels.ServiceChannel.Call(String action, Boolean oneway, ProxyOperationRuntime operation, Object[] ins, Object[] outs, TimeSpan timeout)
+   在 System.ServiceModel.Channels.ServiceChannelProxy.InvokeService(IMethodCallMessage methodCall, ProxyOperationRuntime operation)
+   在 System.ServiceModel.Channels.ServiceChannelProxy.Invoke(IMessage message)
+
+Exception rethrown at [0]: 
+   在 System.Runtime.Remoting.Proxies.RealProxy.HandleReturnMessage(IMessage reqMsg, IMessage retMsg)
+   在 System.Runtime.Remoting.Proxies.RealProxy.PrivateInvoke(MessageData& msgData, Int32 type)
+   在 AirBatchDataTool.AirDataWcf.ILinkOracle.TemplateInsertFltSchedule(PageParam param, Int32 generateAfterDay)
+   在 AirBatchDataTool.AirDataWcf.LinkOracleClient.TemplateInsertFltSchedule(PageParam param, Int32 generateAfterDay) 位置 d:\CodeFile\ExampleCode\MediaCore\ExampePro\AirBatchDataTool\Service References\AirDataWcf\Reference.cs:行号 176
+   在 AirBatchDataTool.BatchSceduleFrm.DoBackEvent(Object sender, DoWorkEventArgs e) 位置 d:\CodeFile\ExampleCode\MediaCore\ExampePro\AirBatchDataTool\Form1.cs:行号 70
