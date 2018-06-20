@@ -317,5 +317,49 @@ namespace OracleClientWcf
             return excute ;
         }
         #endregion
+
+        public List<object> QueryData(string sql, object data, string sqlConnString) 
+        { 
+            //根据SQL准备参数
+            Type t = data.GetType();
+            string[] pis = data.GetAllProperties();
+            string paramMapRule = "{(.*?)}";
+            Regex reg = new Regex(paramMapRule);
+            MatchCollection mc = reg.Matches(sql);
+            string objName = t.Name;
+            Dictionary<string, object> propertyValue = data.GetAllPorpertiesNameAndValues();
+            Dictionary<string, string> paramMapPropertyRule = new Dictionary<string, string>();
+            List<OracleParameter> ps = new List<OracleParameter>();
+            foreach (Match item in mc)
+            {
+                string g = item.Groups[0].Value;//参数串
+                string pn = item.Groups[1].Value;//参数名剔除特殊限定
+                string lowerName = pn.ToLower();
+                bool map = false;
+                foreach (var property in propertyValue)
+                {
+                    if (property.Key.ToLower() == lowerName)
+                    {
+                        map = true;
+                        paramMapPropertyRule.Add(g, property.Key);
+                        string name = objName + "_" + property.Key;//oracle 参数规则
+                        sql = sql.Replace(g, ":" + name);
+                        ps.Add(new OracleParameter() { ParameterName = name, Value = property.Value });
+                        break;
+                    }
+                }
+                if (!map)
+                {//属性没有匹配 
+
+                }
+            }
+            //查询出数据集
+            OracleConnection conn = new OracleConnection(sqlConnString);
+            DataSet ds = new DataSet();
+            conn.Open();
+            DataTable table=  ReadDataFromSqlArrary(sql, objName, ps.ToArray(), conn);;
+            conn.Close();
+            return DataTableConvertEntity(table, data, null);
+        }
     }
 }

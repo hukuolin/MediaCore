@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using Domain.CommonData;
+using Infrastructure.ExtService;
 namespace ExampePro
 {
     class Program
@@ -87,15 +88,36 @@ namespace ExampePro
             string fromFile = dir+@"\GenerateClass\ClassProperty.txt";
             //读取文件中的属性
             string property = CommonHelperEntity.FileFormatExt.ReadFileUtf8Text(fromFile);
-            string file = "FltSchedule";
+            string file = "AirAcType";
             GenerateMoldeFile.GenerateClassFile(dir,file, "Model", "Generate", property, "\r\n");
         }
         static void SyncOldFltSchedult() 
         {
             AirOracleWcf.LinkOracleClient cl = new AirOracleWcf.LinkOracleClient();
             DateTime now = DateTime.Now;
+            DateTime begin=AppConfig.ScheduleBeingDateTime;
+            DateTime end=AppConfig.ScheduleEndDateTime;
+            string format = Common.Data.CommonFormat.DateFormat;
+            for (int i = 1; i <= AppConfig.GenerateHowDaySchedule; i++)
+            {
+                try
+                {
 
-            cl.TemplateInsertFltSchedule(new AirOracleWcf.PageParam() { BeginRow = 1, EndRow = 30, BeginTime =AppConfig.ScheduleBeingDateTime, EndTime = AppConfig.ScheduleEndDateTime });
+                    cl.TemplateInsertFltSchedule(new AirOracleWcf.PageParam()
+                    {
+                        BeginRow = 1,
+                        EndRow = 30,
+                        BeginTime = begin,
+                        EndTime = AppConfig.ScheduleEndDateTime
+                    }, i);
+                    LogHelper.InsertLog(string.Format("Create  time=[ {0} ~ {1}] after day [{2}] success.", begin.ToString(format), end.ToString(format), i));
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.InsertLog(string.Format("Create  time=[ {0} ~ {1}] after day [{2}] happend exception,\r\n{3}", begin.ToString(format),end.ToString(format), i, ex.ToString()));
+                }
+               
+            }
         }
     }
     #region 授权许可证
@@ -131,6 +153,17 @@ namespace ExampePro
         public string NameSpace { get; set; }
         public string ClassName { get; set; }
         public string PropertyListStr { get; set; }
+    }
+    public class LogHelper
+    {
+        public static void InsertLog(string text)
+        {
+            string format = "yyyyMMdd";
+            string time = DateTime.Now.ToString(format) + ".log";
+            text = DateTime.Now.ToString(Common.Data.CommonFormat.DateTimeFormat) + "\t" + text;
+            LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+
+        }
     }
     #endregion
 }

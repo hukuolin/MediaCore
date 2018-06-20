@@ -81,7 +81,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ExampleObj.svc" />
+    <Content Include="FileUploadService.asmx" />
     <Content Include="LinkOracle.svc" />
+    <Compile Include="AirModel\AirAcType.cs" />
     <Compile Include="AirModel\FltSchedule.cs" />
     <Compile Include="AirModel\TechInfo.cs" />
     <Compile Include="AirModel\UseSignTime.cs" />
@@ -101,6 +103,10 @@
     <Compile Include="DBAccess.cs" />
     <Compile Include="ExampleObj.svc.cs">
       <DependentUpon>ExampleObj.svc</DependentUpon>
+    </Compile>
+    <Compile Include="FileUploadService.asmx.cs">
+      <DependentUpon>FileUploadService.asmx</DependentUpon>
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="IExampleObj.cs" />
     <Compile Include="LinkOracle.svc.cs">

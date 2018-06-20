@@ -204,7 +204,13 @@ from t_Flt_Schedule";
         {
             return @"select r,{column} from 
                     (
-                           select rownum r,{column} from t_Flt_Schedule t where flight_date between {BeginTime} and {EndTime} and flight_flag<>'B'
+                           select rownum r,{column} from t_Flt_Schedule t
+                           where flight_date between {BeginTime} and {EndTime} and flight_flag<>'B' and carrier='HU' and nvl(FLIGHT_TYPE, 'A') not in ('W', 'V')
+                           and exists
+                           (
+                             select ac_type_crew from t_Sch_Airport_Config where t.departure_airport=departure_airport
+                                  and t.arrival_airport=arrival_airport
+                           ) 
                     )where r>={BeginRow} and r<={EndRow}".Replace("{column}", column);
         }
     }

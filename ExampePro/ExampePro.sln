@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExampePro", "ExampePro\Exam
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OracleClientWcf", "OracleClientWcf\OracleClientWcf.csproj", "{C496D244-8C2C-40CD-970C-23E12D308368}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AirBatchDataTool", "AirBatchDataTool\AirBatchDataTool.csproj", "{07FFD9E9-7520-4FAB-AFE9-21C11593D93C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{C496D244-8C2C-40CD-970C-23E12D308368}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C496D244-8C2C-40CD-970C-23E12D308368}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C496D244-8C2C-40CD-970C-23E12D308368}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07FFD9E9-7520-4FAB-AFE9-21C11593D93C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07FFD9E9-7520-4FAB-AFE9-21C11593D93C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07FFD9E9-7520-4FAB-AFE9-21C11593D93C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07FFD9E9-7520-4FAB-AFE9-21C11593D93C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

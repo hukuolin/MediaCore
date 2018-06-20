@@ -43,11 +43,7 @@ namespace OracleClientWcf
         }
         void InsertLog(string text) 
         {
-            string format = "yyyyMMdd";
-            string time = DateTime.Now.ToString(format) + ".log";
-            text = DateTime.Now.ToString(Common.Data.CommonFormat.DateTimeFormat)+"\t"+text;
-            LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
-        
+            LogExtend.InsertLog(text);
         }
         public bool GenerateSign(int daySize,DateTime beginDay) 
         {
@@ -144,12 +140,16 @@ namespace OracleClientWcf
         }
 
 
-        public bool TemplateInsertFltSchedule(PageParam param)
+        public string TemplateInsertFltSchedule(PageParam param, int generateAfterDay)
         {
             //查询数据总量
             try
             {
-                string sql = new FltSchedule().GenerateSelectSqlByPage();
+                //查询机型数据集合
+                OracleSqlHelp or = new OracleSqlHelp();
+                string actype=new AirAcType().GetSelectSql();
+                List<object> types= or.QueryData(actype, new AirAcType(), DBAccess.AirDBR5);//可用的机型
+                string sql = new FltSchedule().GenerateSelectSqlByPage();//查询出的正班航班计划数据目标SQL【指定日期范围内限定数目】
                 OracleSqlHelp oracle = new OracleSqlHelp();
                 OracleSqlHelp.EntityDataMapTable fltMap = new OracleSqlHelp.EntityDataMapTable()
                 {
@@ -173,44 +173,68 @@ namespace OracleClientWcf
                 Dictionary<string, List<object>> entity = oracle.DataSetConvertEntity(ds, data);
                 if (entity.Count == 0)
                 {
-                    InsertLog("no set sch_roster data");
-                    return false;
+                    string error = "no set sch_roster data";
+                    InsertLog(error);
+                    return error;
                 }
                 List<FltScheduleFullField> rs = new List<FltScheduleFullField>();
-                int copyNumber = AppConfig.GenerateHowDaySchedule;
                 foreach (var item in entity[table])
                 {
-                    for (int day = 0; day < copyNumber; day++)
+                    if (types.Count > 0)
                     {
-                        FltScheduleFullField field = item as FltScheduleFullField;
-                        string id = new FltScheduleAPI.FltManagerContractClient().InsertFlight_id();
-                        field.flight_id =Convert.ToDecimal(id);
-                        field.op_time = DateTime.Now;
-                        field.remarks = "Third Api Generate Data";
-                        field.SetAsNowYearData(day);
-                        rs.Add(field);
+                        foreach (var t in types)
+                        {
+                            FltScheduleFullField f = item as FltScheduleFullField;
+                            f.ac_type = ((AirAcType)t).ac_type.ToString();
+                            FltScheduleInArray(f, generateAfterDay, rs);
+                        }
                     }
+                    else 
+                    {
+                        FltScheduleInArray(item, generateAfterDay, rs);
+                    }
+                    
                 }
                 //批量写入
                 SqlHelp help = new SqlHelp();
                 string format = "yyyy-mm-dd hh24:mi:ss";
                 string sqlInsert = @"insert into T_FLT_SCHEDULE
-(op_time,remarks,flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,arrival_airport,std,etd,sta,eta)
-values(to_date('{op_time}','{format}'),'{remarks}',{flight_id},to_date('{flight_date}','yyyy-MM-dd'),'{carrier}','{flight_no}','{plan_departure}','{departure_airport}','{plan_arrival}','{arrival_airport}',to_date('{std}','{format}'),to_date('{etd}' ,'{format}'),to_date('{sta}' ,'{format}'),to_date('{eta}' ,'{format}'))".Replace("{format}", format);// help.PrepareInsertSQL<FltScheduleFullField>(null);
+(op_time,remarks,flight_id,flight_date,carrier,flight_no,plan_departure,departure_airport,plan_arrival,arrival_airport,std,etd,sta,eta,AC_TYPE,crew_owner)
+values(to_date('{op_time}','{format}'),'{remarks}',{flight_id},to_date('{flight_date}','yyyy-MM-dd'),'{carrier}','{flight_no}','{plan_departure}','{departure_airport}','{plan_arrival}','{arrival_airport}',to_date('{std}','{format}'),to_date('{etd}' ,'{format}'),to_date('{sta}' ,'{format}'),to_date('{eta}' ,'{format}'),'{AC_TYPE}','{crew_owner}')".Replace("{format}", format);// help.PrepareInsertSQL<FltScheduleFullField>(null);
                 Dictionary<int,bool> res= oracle.BatchExcuteNoQuery(sqlInsert, rs, DBAccess.AirDBR5);
                 StringBuilder sb = new StringBuilder();
+                int succ = 0;
                 foreach (var item in res)
                 {
+                    if (item.Value)
+                    {
+                        succ++;
+                    }
                     sb.AppendLine(item.Key + "=" + item.Value);
                 }
                 InsertLog("Total:" + rs.Count+"\r\n"+sb.ToString());
+                return "Success:"+succ+",Error:"+(res.Count-succ);
             }
             catch (Exception ex)
             {
                 InsertLog("error:"+ex.Message);
-                return false;
+                return ex.Message;
             }
-            return false;
+        }
+        void FltScheduleInArray(object item,int generateAfterDay, List<FltScheduleFullField> rs) 
+        {
+            FltScheduleFullField tpml = item as FltScheduleFullField;
+            if (tpml == null)
+            {
+                return;
+            }
+            FltScheduleFullField field = tpml.MapObject<FltScheduleFullField, FltScheduleFullField>();//入队列不能直接操作对象
+            string id = new FltScheduleAPI.FltManagerContractClient().InsertFlight_id();
+            field.flight_id = Convert.ToDecimal(id);
+            field.op_time = DateTime.Now;
+            field.remarks = "Third Api Generate Data";
+            field.SetAsNowYearData(generateAfterDay);
+            rs.Add(field);
         }
     }
 }

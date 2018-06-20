@@ -5,6 +5,8 @@ using System.Data;
 using System.Data.OracleClient;
 using System.Collections;
 using System.Configuration;
+using Domain.CommonData;
+using Infrastructure.ExtService;
 
 namespace OracleClientWcf
 {
@@ -279,6 +281,17 @@ namespace OracleClientWcf
                 }
                 return day;
             }
+        }
+    }
+    public class LogExtend
+    {
+        public static  void InsertLog(string text)
+        {
+            string format = "yyyyMMdd";
+            string time = DateTime.Now.ToString(format) + ".log";
+            text = DateTime.Now.ToString(Common.Data.CommonFormat.DateTimeFormat) + "\t" + text;
+            LoggerWriter.CreateLogFile(text, new AppDirHelper().GetAppDir(AppCategory.WebApp), ELogType.DebugData, time, true);
+
         }
     }
 }

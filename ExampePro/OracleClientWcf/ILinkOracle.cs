@@ -18,7 +18,7 @@ namespace OracleClientWcf
         [OperationContract]
         bool GenerateSign(int daySize, DateTime beginDay);
         [OperationContract]
-        bool TemplateInsertFltSchedule(PageParam param);
+        string  TemplateInsertFltSchedule(PageParam param, int generateAfterDay);
     }
 
 

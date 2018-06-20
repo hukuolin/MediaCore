@@ -22,8 +22,8 @@ namespace OracleClientWcf
         
         public DateTime sta { get; set; }
         public DateTime eta { get; set; }
-
-
+        public string ac_type { get; set; }
+        public string crew_owner { get; set; }
         /*
          public decimal? crew_link_line { get; set; }
         public decimal? stew_link_line { get; set; }
@@ -43,10 +43,10 @@ namespace OracleClientWcf
         public int ac_layover { get; set; }
         public decimal fly_hours { get; set; }  
         public char flight_type { get; set; }
-        public string ac_type { get; set; }
+       
         public string ac_reg { get; set; }
         public string flg_patch { get; set; }
-         public string crew_owner { get; set; }
+         
         public string stew_owner { get; set; }
         public string plce_owner { get; set; }
         public string mant_owner { get; set; }
